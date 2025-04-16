@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>로그인</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main>
+    <div class="form-container">
+      <h2>로그인</h2>
+      <form onsubmit="handleLogin(event)">
+        <input type="text" id="login-username" placeholder="아이디" required />
+        <input type="password" id="login-password" placeholder="비밀번호" required />
+        <button type="submit">로그인</button>
+      </form>
+      <p style="text-align:center; margin-top: 1rem;">계정이 없으신가요? <a href="signup.html">회원가입</a></p>
+    </div>
+  </main>
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const matchedUser = users.find(u => u.username === username && u.password === password);
+
+      if (matchedUser) {
+        localStorage.setItem("loggedInUser", JSON.stringify(matchedUser));
+        window.location.href = "index.html";
+      } else {
+        alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+      }
+    }
+  </script>
+</body>
+</html>
