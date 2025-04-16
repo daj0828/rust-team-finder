@@ -263,25 +263,46 @@ a:hover {
 .comment strong {
   color: #ffb74d;
 }
-.like-section {
-  margin-top: 0.5rem;
-  text-align: left;
+/* 헤더 정렬 */
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #222;
+  padding: 1rem;
 }
 
-.heart-btn {
-  background-color: transparent;
-  color: #ff6868;
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  height: 40px;
+  width: 40px;
+}
+
+.header-nav input[type="text"] {
+  flex: 1;
+  margin: 0 1rem;
+  padding: 0.5rem;
+  border-radius: 5px;
   border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  background: #333;
+  color: #fff;
 }
 
-.heart-btn:hover {
-  transform: scale(1.1);
+.auth-buttons {
+  display: flex;
+  gap: 10px;
 }
 
-.heart-btn.liked {
-  color: #ff4444;
-  font-weight: bold;
+/* 게시글 내 버튼 정렬 */
+.post-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.5rem;
 }
+
