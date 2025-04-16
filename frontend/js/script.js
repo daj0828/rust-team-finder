@@ -101,4 +101,6 @@ function addComment(event, postId) {
   posts[index].comments.push({ nickname: user.nickname, text });
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
+  const BASE_URL = "https://rust-team-finder.onrender.com"; // Render 백엔드 주소
+  fetch(`${BASE_URL}/api/posts`);
 }
