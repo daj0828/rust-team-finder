@@ -25,11 +25,16 @@
   <main>
     <section class="write-area">
       <button onclick="toggleWrite()" class="write-toggle">글작성</button>
-      <form id="writeSection" style="display:none;" onsubmit="submitPost(event)">
-        <input type="text" id="postTitle" placeholder="제목" required />
-        <textarea id="postContent" rows="4" placeholder="내용을 입력하세요" required></textarea>
-        <button type="submit">작성하기</button>
-      </form>
+      <form id="postForm" onsubmit="submitPost(event)">
+  <div class="form-group">
+    <input type="text" id="postTitle" placeholder="제목" required />
+  </div>
+  <div class="form-group">
+    <textarea id="postContent" placeholder="내용을 입력하세요" required></textarea>
+  </div>
+  <button type="submit" class="write-button">작성하기</button>
+</form>
+
     </section>
 
     <section id="postList" class="posts"></section>

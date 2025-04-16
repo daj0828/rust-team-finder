@@ -463,5 +463,48 @@ form button {
   font-weight: bold;
   cursor: pointer;
 }
+#postForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#postForm .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+#postForm input,
+#postForm textarea {
+  background-color: #2d2d2d;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#postForm textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.write-button {
+  background-color: orange;
+  color: #000;
+  font-weight: bold;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 
 
