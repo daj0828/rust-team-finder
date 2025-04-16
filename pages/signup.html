@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>회원가입</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <main>
+    <div class="form-container">
+      <h2>회원가입</h2>
+      <form onsubmit="handleSignup(event)">
+        <input type="text" id="signup-username" placeholder="아이디" required />
+        <input type="password" id="signup-password" placeholder="비밀번호" required />
+        <input type="text" id="signup-nickname" placeholder="닉네임" required />
+        <input type="text" id="signup-discord" placeholder="디스코드 아이디" required />
+        <button type="submit">가입하기</button>
+      </form>
+      <p style="text-align:center; margin-top: 1rem;">이미 계정이 있으신가요? <a href="login.html">로그인</a></p>
+    </div>
+  </main>
+  <script>
+    function handleSignup(event) {
+      event.preventDefault();
+
+      const username = document.getElementById("signup-username").value.trim();
+      const password = document.getElementById("signup-password").value.trim();
+      const nickname = document.getElementById("signup-nickname").value.trim();
+      const discord = document.getElementById("signup-discord").value.trim();
+
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      if (users.find(u => u.username === username)) {
+        alert("이미 존재하는 아이디입니다.");
+        return;
+      }
+
+      users.push({ username, password, nickname, discord });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("회원가입 완료! 로그인 해주세요.");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

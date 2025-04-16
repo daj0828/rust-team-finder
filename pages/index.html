@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rust 팀원 모집</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header><nav>
+    <h1>Rust 팀원 모집</h1>
+    <button onclick="logout()">로그아웃</button></nav>
+  </header>
+
+  <main>
+    <section id="writeSection" style="display: none;" class="write-form">
+      <h2>글 작성</h2>
+      <form onsubmit="submitPost(event)">
+        <input type="text" id="postTitle" placeholder="제목" required />
+        <textarea id="postContent" rows="4" placeholder="내용을 입력하세요" required></textarea>
+        <button type="submit">작성하기</button>
+      </form>
+    </section>
+
+    <section id="postList" class="posts"></section>
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
