@@ -27,3 +27,13 @@ app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 app.get('/', (req, res) => {
   res.send('Rust Team Finder backend is running!');
 });
+const path = require('path');
+
+// 정적 파일 서빙 (프론트엔드 HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, '../pages')));
+
+// 루트 URL에 index.html 띄우기
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../pages/index.html'));
+});
+
