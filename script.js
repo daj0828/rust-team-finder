@@ -1,16 +1,9 @@
-// 로그인 확인
+const BASE_URL = 'http://localhost:5000';
+
 document.addEventListener("DOMContentLoaded", () => {
-  const userJson = localStorage.getItem("loggedInUser");
+  const userJson = localStorage.getItem("token");
   if (!userJson) {
     alert("로그인 후 이용해주세요!");
-    window.location.href = "login.html";
-    return;
-  }
-
-  const user = JSON.parse(userJson);
-  if (!user || !user.username) {
-    alert("로그인 정보가 잘못되었습니다.");
-    localStorage.removeItem("loggedInUser");
     window.location.href = "login.html";
     return;
   }
@@ -19,47 +12,46 @@ document.addEventListener("DOMContentLoaded", () => {
   displayPosts();
 });
 
-// 로그아웃
 function logout() {
-  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("token");
+  localStorage.removeItem("userInfo");
   window.location.href = "login.html";
 }
 
-// 글 작성
-function submitPost(event) {
+async function submitPost(event) {
   event.preventDefault();
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("userInfo"));
   const title = document.getElementById("postTitle").value.trim();
   const content = document.getElementById("postContent").value.trim();
 
   if (!title || !content) return;
 
-  const newPost = {
-    id: Date.now(),
-    title,
-    content,
-    nickname: user.nickname,
-    discord: user.discord,
-    timestamp: new Date().toLocaleString(),
-    comments: []
-  };
+  const res = await fetch(`${BASE_URL}/api/posts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Authorization': `Bearer ${token}` // if using auth middleware
+    },
+    body: JSON.stringify({
+      title,
+      content,
+      nickname: user.nickname,
+      discord: user.discord
+    })
+  });
 
-  const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-  posts.unshift(newPost);
-  localStorage.setItem("posts", JSON.stringify(posts));
-
-  document.getElementById("postTitle").value = "";
-  document.getElementById("postContent").value = "";
-  displayPosts();
+  if (res.ok) {
+    document.getElementById("postTitle").value = "";
+    document.getElementById("postContent").value = "";
+    displayPosts();
+  }
 }
 
-// 게시글 표시
-function displayPosts() {
+async function displayPosts() {
+  const res = await fetch(`${BASE_URL}/api/posts`);
+  const posts = await res.json();
   const postList = document.getElementById("postList");
-  if (!postList) return;
-
-  const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-
   postList.innerHTML = posts.map(post => `
     <div class="post">
       <div class="post-header">
@@ -67,38 +59,27 @@ function displayPosts() {
         <span class="author">${post.nickname} (${post.discord})</span>
       </div>
       <p class="content">${post.content}</p>
-      <div class="timestamp">${post.timestamp}</div>
-
-      <div class="comment-section">
-        <h4>댓글</h4>
-        <div class="comment-list" id="comments-${post.id}">
-          ${post.comments.map(c => `
-            <div class="comment"><strong>${c.nickname}</strong>: ${c.text}</div>
-          `).join("")}
-        </div>
-
-        <form onsubmit="addComment(event, ${post.id})">
-          <input type="text" id="comment-${post.id}" placeholder="댓글을 입력하세요" required />
-          <button type="submit">댓글 작성</button>
-        </form>
-      </div>
+      <div class="timestamp">${new Date(post.timestamp).toLocaleString()}</div>
     </div>
-  `).join("");
+  `).join('');
 }
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-// 댓글 작성
-function addComment(event, postId) {
-  event.preventDefault();
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
-  const input = document.getElementById(`comment-${postId}`);
-  const text = input.value.trim();
-  if (!text) return;
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-  const index = posts.findIndex(p => p.id === postId);
-  if (index === -1) return;
+  const res = await fetch(`${BASE_URL}/api/users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
 
-  posts[index].comments.push({ nickname: user.nickname, text });
-  localStorage.setItem("posts", JSON.stringify(posts));
-  displayPosts();
-}
+  if (res.ok) {
+    const user = await res.json();
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
+    window.location.href = "index.html";
+  } else {
+    alert("로그인 실패!");
+  }
+});
