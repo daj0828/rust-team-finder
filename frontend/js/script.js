@@ -159,3 +159,13 @@ function togglePin(postId) {
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
 }
+function toggleWrite() {
+  const section = document.getElementById("writeSection");
+  section.style.display = section.style.display === "none" ? "block" : "none";
+}
+
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  window.location.href = "login.html";
+}
+
