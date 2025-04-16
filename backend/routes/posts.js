@@ -6,9 +6,14 @@ const path = require('path');
 const postsPath = path.join(__dirname, '../data/posts.json');
 
 router.get('/', async (req, res) => {
-  const posts = await fs.readJson(postsPath).catch(() => []);
-  res.json(posts);
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 }); // 최신순 정렬
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: '서버 오류' });
+  }
 });
+
 
 router.post('/', async (req, res) => {
   const { title, content, username, nickname, discord } = req.body;
