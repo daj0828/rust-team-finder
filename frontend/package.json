@@ -1,0 +1,11 @@
+{
+  "name": "rust-team-finder-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Rust Team Finder",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
