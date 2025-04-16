@@ -1,18 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs-extra');
-const path = require('path');
+const Post = require('../models/Post');
 
-const postsPath = path.join(__dirname, '../data/posts.json');
-
-router.get('/', async (req, res) => {
+// 글 작성
+router.post('/', async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }); // 최신순 정렬
-    res.json(posts);
+    const newPost = new Post(req.body);
+    await newPost.save();
+    res.status(201).json(newPost);
   } catch (err) {
-    res.status(500).json({ message: '서버 오류' });
+    res.status(500).json({ message: err.message });
   }
 });
+
+// 전체 글 조회
+router.get('/', async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ timestamp: -1 });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+module.exports = router;
 
 
 router.post('/', async (req, res) => {
