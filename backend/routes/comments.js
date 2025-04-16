@@ -1,45 +1,21 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const CommentModel = require('../models/Comment'); // 이름 충돌 방지
 const router = express.Router();
+const fs = require('fs-extra');
+const path = require('path');
 
-// ✅ 토큰 검증 미들웨어 (dot notation 사용)
-function verifyToken(req, res, next) {
-    const token = req.headers.authorization;
-    if (!token) return res.status(403).json({ error: 'No token' });
+const postsPath = path.join(__dirname, '../data/posts.json');
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ error: 'Invalid token' });
-        req.userId = decoded.id;
-        next();
-    });
-}
-
-// ✅ 댓글 작성
-router.post('/:postId', verifyToken, async (req, res) => {
-    try {
-        const comment = new CommentModel({
-            postId: req.params.postId,
-            commenter: req.userId,
-            text: req.body.text
-        });
-        await comment.save();
-        res.json(comment);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to post comment' });
-    }
-});
-
-// ✅ 댓글 불러오기
-router.get('/:postId', async (req, res) => {
-    try {
-        const comments = await CommentModel.find({ postId: req.params.postId })
-            .populate('commenter', 'username')
-            .sort({ createdAt: -1 });
-        res.json(comments);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to get comments' });
-    }
+router.post('/:id/comment', async (req, res) => {
+  const { nickname, text } = req.body;
+  const posts = await fs.readJson(postsPath).catch(() => []);
+  const post = posts.find(p => p.id == req.params.id);
+  if (post) {
+    post.comments.push({ nickname, text, time: new Date().toISOString() });
+    await fs.writeJson(postsPath, posts);
+    res.json(post.comments);
+  } else {
+    res.status(404).json({ message: '게시물을 찾을 수 없음' });
+  }
 });
 
 module.exports = router;

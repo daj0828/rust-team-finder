@@ -1,35 +1,27 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 const router = express.Router();
+const fs = require('fs-extra');
+const path = require('path');
+
+const usersPath = path.join(__dirname, '../data/users.json');
 
 router.post('/signup', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const hash = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, password: hash });
-        await newUser.save();
-        res.status(201).json({ message: 'User created' });
-    } catch (err) {
-        res.status(400).json({ error: 'Signup failed' });
-    }
+  const { username, password, nickname, discord } = req.body;
+  const users = await fs.readJson(usersPath).catch(() => []);
+  if (users.find(u => u.username === username)) {
+    return res.status(400).json({ message: '이미 존재하는 아이디입니다.' });
+  }
+  users.push({ username, password, nickname, discord });
+  await fs.writeJson(usersPath, users);
+  res.json({ message: '회원가입 성공' });
 });
 
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const user = await User.findOne({ username });
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) return res.status(401).json({ error: 'Wrong password' });
-
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ token, username: user.username });
-    } catch (err) {
-        res.status(400).json({ error: 'Login failed' });
-    }
+  const { username, password } = req.body;
+  const users = await fs.readJson(usersPath).catch(() => []);
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) return res.status(401).json({ message: '아이디 또는 비밀번호가 틀렸습니다.' });
+  res.json(user);
 });
 
 module.exports = router;

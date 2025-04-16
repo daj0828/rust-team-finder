@@ -1,28 +1,56 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const Post = require('../models/Post');
-const User = require('../models/User');
 const router = express.Router();
+const fs = require('fs-extra');
+const path = require('path');
 
-function verifyToken(req, res, next) {
-    const token = req.headers.authorization;
-    if (!token) return res.status(403).json({ error: 'No token' });
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ error: 'Invalid token' });
-        req.userId = decoded.id;
-        next();
-    });
-}
-
-router.post('/', verifyToken, async (req, res) => {
-    const post = new Post({ author: req.userId, content: req.body.content });
-    await post.save();
-    res.json(post);
-});
+const postsPath = path.join(__dirname, '../data/posts.json');
 
 router.get('/', async (req, res) => {
-    const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
-    res.json(posts);
+  const posts = await fs.readJson(postsPath).catch(() => []);
+  res.json(posts);
+});
+
+router.post('/', async (req, res) => {
+  const { title, content, username, nickname, discord } = req.body;
+  const posts = await fs.readJson(postsPath).catch(() => []);
+  const newPost = {
+    id: Date.now(),
+    title,
+    content,
+    username,
+    nickname,
+    discord,
+    timestamp: new Date().toISOString(),
+    likes: 0,
+    comments: [],
+    pinned: false
+  };
+  posts.unshift(newPost);
+  await fs.writeJson(postsPath, posts);
+  res.json(newPost);
+});
+
+router.post('/:id/like', async (req, res) => {
+  const posts = await fs.readJson(postsPath).catch(() => []);
+  const post = posts.find(p => p.id == req.params.id);
+  if (post) post.likes++;
+  await fs.writeJson(postsPath, posts);
+  res.json({ likes: post.likes });
+});
+
+router.post('/:id/pin', async (req, res) => {
+  const posts = await fs.readJson(postsPath).catch(() => []);
+  const post = posts.find(p => p.id == req.params.id);
+  if (post) post.pinned = !post.pinned;
+  await fs.writeJson(postsPath, posts);
+  res.json({ pinned: post.pinned });
+});
+
+router.delete('/:id', async (req, res) => {
+  let posts = await fs.readJson(postsPath).catch(() => []);
+  posts = posts.filter(p => p.id != req.params.id);
+  await fs.writeJson(postsPath, posts);
+  res.json({ message: '삭제됨' });
 });
 
 module.exports = router;
