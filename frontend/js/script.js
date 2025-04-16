@@ -15,8 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("writeSection").style.display = "block";
-  document.getElementById("searchInput").addEventListener("input", displayPosts);
   displayPosts();
+
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      displayPosts(searchInput.value.trim().toLowerCase());
+    });
+  }
 });
 
 function logout() {
@@ -53,40 +59,44 @@ function submitPost(event) {
   displayPosts();
 }
 
-function displayPosts() {
+function displayPosts(filter = "") {
   const postList = document.getElementById("postList");
   if (!postList) return;
 
   const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-  const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
 
-  const filtered = posts
-    .filter(post =>
-      post.title.toLowerCase().includes(searchValue) ||
-      post.nickname.toLowerCase().includes(searchValue) ||
-      post.discord.toLowerCase().includes(searchValue)
-    )
-    .sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return b.id - a.id;
-    });
+  // 핀된 글 먼저 정렬
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return b.id - a.id;
+  });
+
+  const filtered = sortedPosts.filter(post =>
+    post.title.toLowerCase().includes(filter) ||
+    post.content.toLowerCase().includes(filter) ||
+    post.nickname.toLowerCase().includes(filter)
+  );
+
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
   postList.innerHTML = filtered.map(post => `
     <div class="post">
       <div class="post-header">
-        <h3>${post.title}${post.pinned ? " 📌" : ""}</h3>
+        <h3>${post.title}</h3>
         <span class="author">${post.nickname} (${post.discord})</span>
       </div>
       <p class="content">${post.content}</p>
       <div class="timestamp">${post.timestamp}</div>
+      <div style="display:flex; justify-content: space-between; align-items:center; margin-top: 8px;">
+        <button onclick="toggleLike(${post.id})">❤️ ${post.likes}</button>
 
-      <div>
-        <button onclick="likePost(${post.id})">❤️ ${post.likes}</button>
-        ${isAdmin() ? `
-          <button onclick="deletePost(${post.id})">삭제</button>
-          <button onclick="togglePin(${post.id})">${post.pinned ? "핀 해제" : "핀 고정"}</button>
-        ` : ""}
+        ${user.username === "zmxnasd11" ? `
+          <div>
+            <button onclick="deletePost(${post.id})" style="background:#e74c3c; color:#fff;">삭제</button>
+            <button onclick="togglePin(${post.id})">${post.pinned ? '핀 해제' : '상단 고정'}</button>
+          </div>
+        ` : ''}
       </div>
 
       <div class="comment-section">
@@ -121,20 +131,22 @@ function addComment(event, postId) {
   displayPosts();
 }
 
-function likePost(postId) {
+function toggleLike(postId) {
   const posts = JSON.parse(localStorage.getItem("posts") || "[]");
   const index = posts.findIndex(p => p.id === postId);
   if (index === -1) return;
 
-  posts[index].likes++;
+  posts[index].likes = (posts[index].likes || 0) + 1;
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
 }
 
 function deletePost(postId) {
+  if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
+
   const posts = JSON.parse(localStorage.getItem("posts") || "[]");
-  const filtered = posts.filter(p => p.id !== postId);
-  localStorage.setItem("posts", JSON.stringify(filtered));
+  const updated = posts.filter(p => p.id !== postId);
+  localStorage.setItem("posts", JSON.stringify(updated));
   displayPosts();
 }
 
@@ -146,9 +158,4 @@ function togglePin(postId) {
   posts[index].pinned = !posts[index].pinned;
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
-}
-
-function isAdmin() {
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
-  return user.username === "admin";
 }
