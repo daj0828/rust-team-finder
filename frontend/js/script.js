@@ -92,10 +92,14 @@ function displayPosts(filter = "") {
         <button onclick="toggleLike(${post.id})">❤️ ${post.likes}</button>
 
         ${user.username === "zmxnasd11" ? `
-          <div>
-            <button onclick="deletePost(${post.id})" style="background:#e74c3c; color:#fff;">삭제</button>
-            <button onclick="togglePin(${post.id})">${post.pinned ? '핀 해제' : '상단 고정'}</button>
-          </div>
+        <div class="post-buttons">
+  <button class="like-btn" onclick="toggleLike(${post.id})">📌 ${post.likes || 0}</button>
+  ${isAdmin ? `
+    <button class="delete-btn" onclick="deletePost(${post.id})">삭제</button>
+    <button class="pin-btn" onclick="togglePin(${post.id})">상단 고정</button>
+  ` : ""}
+</div>
+
         ` : ''}
       </div>
 
