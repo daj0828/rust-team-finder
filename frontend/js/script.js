@@ -1,22 +1,25 @@
 const BASE_URL = 'http://localhost:5000';
 
 document.addEventListener("DOMContentLoaded", () => {
-  const userJson = localStorage.getItem("token");
+  const userJson = localStorage.getItem("loggedInUser");
   if (!userJson) {
     alert("로그인 후 이용해주세요!");
     window.location.href = "login.html";
     return;
   }
 
-  document.getElementById("writeSection").style.display = "block";
-  displayPosts();
-});
+  try {
+    const user = JSON.parse(userJson);
+    if (!user.username) throw new Error("로그인 정보 오류");
 
-function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userInfo");
-  window.location.href = "login.html";
-}
+    document.getElementById("writeSection").style.display = "block";
+    displayPosts();
+  } catch (e) {
+    console.error(e);
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+  }
+});
 
 async function submitPost(event) {
   event.preventDefault();
@@ -63,3 +66,26 @@ async function displayPosts() {
     </div>
   `).join('');
 }
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  const res = await fetch(`${BASE_URL}/api/users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (res.ok) {
+    const user = await res.json();
+    // ✅ 여기서 로컬스토리지 저장됨
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+    // ✅ 여기로 이동
+    window.location.href = "index.html"; 
+  } else {
+    alert("로그인 실패!");
+  }
+});
