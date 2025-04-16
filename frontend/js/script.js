@@ -1,7 +1,7 @@
-const BASE_URL = 'https://rust-team-finder.onrender.com';
+const BASE_URL = 'http://localhost:5000';
 
 document.addEventListener("DOMContentLoaded", () => {
-  const userJson = localStorage.getItem("loggedInUser");
+  const userJson = localStorage.getItem("token");
   if (!userJson) {
     alert("로그인 후 이용해주세요!");
     window.location.href = "login.html";
@@ -13,45 +13,45 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function logout() {
-  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("token");
+  localStorage.removeItem("userInfo");
   window.location.href = "login.html";
 }
 
-// 글 작성
 async function submitPost(event) {
   event.preventDefault();
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("userInfo"));
   const title = document.getElementById("postTitle").value.trim();
   const content = document.getElementById("postContent").value.trim();
 
   if (!title || !content) return;
 
-  const postData = {
-    title,
-    content,
-    nickname: user.nickname,
-    discord: user.discord,
-  };
-
-  await fetch(`${BASE_URL}/api/posts`, {
+  const res = await fetch(`${BASE_URL}/api/posts`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(postData)
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Authorization': `Bearer ${token}` // if using auth middleware
+    },
+    body: JSON.stringify({
+      title,
+      content,
+      nickname: user.nickname,
+      discord: user.discord
+    })
   });
 
-  document.getElementById("postTitle").value = "";
-  document.getElementById("postContent").value = "";
-  displayPosts();
+  if (res.ok) {
+    document.getElementById("postTitle").value = "";
+    document.getElementById("postContent").value = "";
+    displayPosts();
+  }
 }
 
-// 글 불러오기
 async function displayPosts() {
-  const postList = document.getElementById("postList");
-  postList.innerHTML = "";
-
   const res = await fetch(`${BASE_URL}/api/posts`);
   const posts = await res.json();
-
+  const postList = document.getElementById("postList");
   postList.innerHTML = posts.map(post => `
     <div class="post">
       <div class="post-header">

@@ -1,27 +1,30 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 const router = express.Router();
-const fs = require('fs-extra');
-const path = require('path');
-
-const usersPath = path.join(__dirname, '../data/users.json');
 
 router.post('/signup', async (req, res) => {
-  const { username, password, nickname, discord } = req.body;
-  const users = await fs.readJson(usersPath).catch(() => []);
-  if (users.find(u => u.username === username)) {
-    return res.status(400).json({ message: '이미 존재하는 아이디입니다.' });
-  }
-  users.push({ username, password, nickname, discord });
-  await fs.writeJson(usersPath, users);
-  res.json({ message: '회원가입 성공' });
+  const { email, password, nickname, discord } = req.body;
+  const existing = await User.findOne({ email });
+  if (existing) return res.status(400).json({ error: '이미 가입된 이메일입니다.' });
+
+  const hash = await bcrypt.hash(password, 10);
+  const newUser = new User({ email, password: hash, nickname, discord });
+  await newUser.save();
+  res.status(201).json({ message: '회원가입 성공' });
 });
 
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  const users = await fs.readJson(usersPath).catch(() => []);
-  const user = users.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ message: '아이디 또는 비밀번호가 틀렸습니다.' });
-  res.json(user);
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(400).json({ error: '유효하지 않은 사용자입니다.' });
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return res.status(400).json({ error: '비밀번호가 틀렸습니다.' });
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  res.json({ token, user: { nickname: user.nickname, discord: user.discord } });
 });
 
 module.exports = router;
