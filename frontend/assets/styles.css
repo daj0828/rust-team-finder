@@ -263,3 +263,25 @@ a:hover {
 .comment strong {
   color: #ffb74d;
 }
+.like-section {
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.heart-btn {
+  background-color: transparent;
+  color: #ff6868;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.heart-btn:hover {
+  transform: scale(1.1);
+}
+
+.heart-btn.liked {
+  color: #ff4444;
+  font-weight: bold;
+}

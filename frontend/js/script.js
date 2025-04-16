@@ -41,7 +41,8 @@ function submitPost(event) {
     nickname: user.nickname,
     discord: user.discord,
     timestamp: new Date().toLocaleString(),
-    comments: []
+    comments: [],
+    likes: [],
   };
 
   const posts = JSON.parse(localStorage.getItem("posts") || "[]");
@@ -53,37 +54,70 @@ function submitPost(event) {
   displayPosts();
 }
 
+// 하트(좋아요) 토글
+function toggleLike(postId) {
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+  const index = posts.findIndex(p => p.id === postId);
+  if (index === -1) return;
+
+  const likes = posts[index].likes || [];
+  const alreadyLiked = likes.includes(user.username);
+
+  if (alreadyLiked) {
+    posts[index].likes = likes.filter(u => u !== user.username);
+  } else {
+    posts[index].likes.push(user.username);
+  }
+
+  localStorage.setItem("posts", JSON.stringify(posts));
+  displayPosts();
+}
+
 // 게시글 표시
 function displayPosts() {
   const postList = document.getElementById("postList");
   if (!postList) return;
 
   const posts = JSON.parse(localStorage.getItem("posts") || "[]");
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
-  postList.innerHTML = posts.map(post => `
-    <div class="post">
-      <div class="post-header">
-        <h3>${post.title}</h3>
-        <span class="author">${post.nickname} (${post.discord})</span>
-      </div>
-      <p class="content">${post.content}</p>
-      <div class="timestamp">${post.timestamp}</div>
+  postList.innerHTML = posts.map(post => {
+    const liked = post.likes && post.likes.includes(user.username);
+    const heartClass = liked ? "liked" : "";
+    const likeCount = post.likes ? post.likes.length : 0;
 
-      <div class="comment-section">
-        <h4>댓글</h4>
-        <div class="comment-list" id="comments-${post.id}">
-          ${post.comments.map(c => `
-            <div class="comment"><strong>${c.nickname}</strong>: ${c.text}</div>
-          `).join("")}
+    return `
+      <div class="post">
+        <div class="post-header">
+          <h3>${post.title}</h3>
+          <span class="author">${post.nickname} (${post.discord})</span>
+        </div>
+        <p class="content">${post.content}</p>
+        <div class="timestamp">${post.timestamp}</div>
+
+        <div class="like-section">
+          <button class="heart-btn ${heartClass}" onclick="toggleLike(${post.id})">
+            ❤️ ${likeCount}
+          </button>
         </div>
 
-        <form onsubmit="addComment(event, ${post.id})">
-          <input type="text" id="comment-${post.id}" placeholder="댓글을 입력하세요" required />
-          <button type="submit">댓글 작성</button>
-        </form>
+        <div class="comment-section">
+          <h4>댓글</h4>
+          <div class="comment-list" id="comments-${post.id}">
+            ${post.comments.map(c => `
+              <div class="comment"><strong>${c.nickname}</strong>: ${c.text}</div>
+            `).join("")}
+          </div>
+
+          <form onsubmit="addComment(event, ${post.id})">
+            <input type="text" id="comment-${post.id}" placeholder="댓글을 입력하세요" required />
+            <button type="submit">댓글 작성</button>
+          </form>
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 // 댓글 작성
@@ -101,6 +135,4 @@ function addComment(event, postId) {
   posts[index].comments.push({ nickname: user.nickname, text });
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
-  const BASE_URL = "https://rust-team-finder.onrender.com"; // Render 백엔드 주소
-  fetch(`${BASE_URL}/api/posts`);
 }
