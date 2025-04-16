@@ -305,4 +305,45 @@ a:hover {
   gap: 10px;
   margin-top: 0.5rem;
 }
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #1c1c1c;
+  position: relative;
+}
+
+.search-container {
+  flex: 1;
+}
+
+#searchInput {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fff;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  color: orange;
+}
+
+.logo {
+  width: 50px;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.site-title h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  text-align: right;
+}
 

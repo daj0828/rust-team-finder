@@ -7,11 +7,24 @@
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
-  <header><nav>
-    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" style="margin-left: 1rem; padding: 0.5rem; border-radius: 8px;" />
-    <h1>Rust 팀원 모집</h1>
-    <button onclick="logout()">로그아웃</button></nav>
-  </header>
+ <header>
+  <nav class="top-nav">
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="검색어를 입력하세요" />
+    </div>
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="Rust 로고" class="logo" />
+      <div class="site-title">
+        <h1>Rust</h1>
+        <h1>팀원</h1>
+        <h1>모집</h1>
+      </div>
+      <button onclick="logout()">로그아웃</button>
+    </div>
+  </nav>
+</header>
+
+
 
   <main>
     <section id="writeSection" style="display: none;" class="write-form">
